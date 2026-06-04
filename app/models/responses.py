@@ -83,6 +83,7 @@ class AnalyzeResponse(BaseModel):
     result: AnalysisResultData
     sensitivity: Optional[SensitivityReport] = None
     processing_time_ms: int
+    binary_image_b64: str
 
 
 # --------------------------------------------------------------------------- #

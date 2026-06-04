@@ -56,6 +56,7 @@ async def analyze_image(
     reg_result = regression.linear_regression(x, y)
     
     foreground_ratio = float(np.count_nonzero(binary) / binary.size)
+    binary_b64 = image_processing.encode_image_base64(binary)
     
     params = AnalysisParameters(
         analysis_mode=AnalysisMode(analysis_mode),
@@ -94,7 +95,8 @@ async def analyze_image(
     return AnalyzeResponse(
         parameters=params,
         result=result_data,
-        processing_time_ms=processing_time_ms
+        processing_time_ms=processing_time_ms,
+        binary_image_b64=binary_b64
     )
 
 

@@ -1,5 +1,6 @@
 """Image processing utilities — grayscale, thresholding, morphology, edge detection."""
 
+import base64
 import cv2
 import numpy as np
 
@@ -84,3 +85,11 @@ def resize_if_needed(image: np.ndarray, max_dimension: int) -> np.ndarray:
         new_w, new_h = int(w * scale), int(h * scale)
         image = cv2.resize(image, (new_w, new_h), interpolation=cv2.INTER_AREA)
     return image
+
+
+def encode_image_base64(image: np.ndarray) -> str:
+    """Encode a numpy image array to a base64 PNG string."""
+    success, buffer = cv2.imencode('.png', image)
+    if not success:
+        return ""
+    return base64.b64encode(buffer).decode("utf-8")
