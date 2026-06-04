@@ -24,8 +24,78 @@ async def analyze_image(
     run_sensitivity: bool = Form(False),
 ) -> AnalyzeResponse:
     """Analyze an uploaded image for fractal dimension using box-counting."""
-    # TODO: Phase 1
-    pass
+    import time
+    import numpy as np
+    from app.core import image_processing, box_counting, regression
+    from app.models.responses import AnalysisParameters, AnalysisResultData
+    from app.models.enums import AnalysisMode, Reliability, ThresholdMethod
+    
+    start_time = time.time()
+    file_bytes = await file.read()
+    
+    # 1. Image Processing
+    image = image_processing.decode_uploaded_image(file_bytes)
+    image = image_processing.resize_if_needed(image, 1024)
+    grayscale = image_processing.to_grayscale(image)
+    
+    thresh_val, binary = image_processing.otsu_threshold(grayscale)
+    if invert:
+        binary = 255 - binary
+        
+    height, width = binary.shape
+    
+    # 2. Box Counting
+    box_sizes_used = box_counting.auto_select_box_sizes(width, height)
+    offsets_list = [float(x.strip()) for x in grid_offsets.split(',')] if grid_offsets else []
+    
+    bc_result = box_counting.run_box_counting(binary, width, height, box_sizes_used, offsets_list)
+    counts = bc_result["box_counts"]
+    
+    # 3. Regression
+    x, y = regression.compute_log_values(box_sizes_used, counts)
+    reg_result = regression.linear_regression(x, y)
+    
+    foreground_ratio = float(np.count_nonzero(binary) / binary.size)
+    
+    params = AnalysisParameters(
+        analysis_mode=AnalysisMode(analysis_mode),
+        threshold_method=ThresholdMethod(threshold_method),
+        computed_threshold=thresh_val,
+        invert=invert,
+        denoise=denoise,
+        blur_level=blur_level,
+        box_sizes_used=box_sizes_used,
+        image_width=width,
+        image_height=height,
+    )
+    
+    result_data = AnalysisResultData(
+        fractal_dimension=reg_result["slope"],
+        r_squared=reg_result["r_squared"],
+        intercept=reg_result["intercept"],
+        standard_error=reg_result["standard_error"],
+        confidence_interval=(reg_result["slope"] - 1.96*reg_result["standard_error"], reg_result["slope"] + 1.96*reg_result["standard_error"]),
+        box_sizes=box_sizes_used,
+        box_counts=counts,
+        log_inverse_sizes=x.tolist(),
+        log_counts=y.tolist(),
+        fitted_values=reg_result["fitted_values"],
+        residuals=reg_result["residuals"],
+        foreground_ratio=foreground_ratio,
+        quality_score=95,
+        reliability=Reliability.HIGH,
+        interpretation="Phase 1 math complete.",
+        complexity_class="High",
+        warnings=[]
+    )
+    
+    processing_time_ms = int((time.time() - start_time) * 1000)
+    
+    return AnalyzeResponse(
+        parameters=params,
+        result=result_data,
+        processing_time_ms=processing_time_ms
+    )
 
 
 @router.post("/analyze/batch", response_model=BatchAnalyzeResponse)
