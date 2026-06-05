@@ -8,6 +8,11 @@ def linear_regression(
 ) -> dict:
     """Perform OLS linear regression. Returns {slope, intercept, r_squared, standard_error, fitted_values, residuals}."""
     slope, intercept = np.polyfit(x, y, 1)
+    
+    import math
+    if math.isnan(slope) or math.isinf(slope) or slope < 0.5 or slope > 2.1:
+        raise ValueError("Degenerate result: threshold value produces an image with too little variation for reliable box-counting. Try a higher threshold value.")
+
     fitted_values = slope * x + intercept
     residuals = y - fitted_values
     

@@ -13,9 +13,9 @@ router = APIRouter()
 async def analyze_image(
     request: Request,
     file: UploadFile = File(..., description="Image file (PNG, JPG, JPEG, WEBP)"),
-    analysis_mode: str = Form("full-mask"),
+    analysis_mode: str = Form("full_mask"),
     threshold_method: str = Form("otsu"),
-    manual_threshold: Optional[int] = Form(None),
+    threshold_value: int = Form(128),
     invert: bool = Form(False),
     denoise: bool = Form(False),
     blur_level: int = Form(0),
@@ -38,7 +38,20 @@ async def analyze_image(
     image = image_processing.resize_if_needed(image, 1024)
     grayscale = image_processing.to_grayscale(image)
     
-    thresh_val, binary = image_processing.otsu_threshold(grayscale)
+    thresh_val = None
+    if analysis_mode == "boundary":
+        binary = image_processing.mode_boundary(grayscale)
+    elif analysis_mode == "texture":
+        binary = image_processing.mode_texture(grayscale)
+    else:
+        if threshold_method == "adaptive":
+            binary = image_processing.adaptive_threshold(grayscale)
+        elif threshold_method == "manual":
+            thresh_val = threshold_value
+            binary = image_processing.manual_threshold(grayscale, thresh_val)
+        else:
+            thresh_val, binary = image_processing.otsu_threshold(grayscale)
+            
     if invert:
         binary = 255 - binary
         
@@ -53,14 +66,18 @@ async def analyze_image(
     
     # 3. Regression
     x, y = regression.compute_log_values(box_sizes_used, counts)
-    reg_result = regression.linear_regression(x, y)
+    try:
+        reg_result = regression.linear_regression(x, y)
+    except ValueError as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=422, detail=str(e))
     
     foreground_ratio = float(np.count_nonzero(binary) / binary.size)
     binary_b64 = image_processing.encode_image_base64(binary)
     
     params = AnalysisParameters(
-        analysis_mode=AnalysisMode(analysis_mode),
-        threshold_method=ThresholdMethod(threshold_method),
+        analysis_mode=analysis_mode,
+        threshold_method=threshold_method,
         computed_threshold=thresh_val,
         invert=invert,
         denoise=denoise,
@@ -96,7 +113,10 @@ async def analyze_image(
         parameters=params,
         result=result_data,
         processing_time_ms=processing_time_ms,
-        binary_image_b64=binary_b64
+        binary_image_b64=binary_b64,
+        threshold_method=threshold_method,
+        threshold_value=threshold_value,
+        analysis_mode=analysis_mode
     )
 
 
@@ -104,7 +124,7 @@ async def analyze_image(
 async def analyze_batch(
     request: Request,
     files: list[UploadFile] = File(..., description="Multiple image files (max 10)"),
-    analysis_mode: str = Form("full-mask"),
+    analysis_mode: str = Form("full_mask"),
     threshold_method: str = Form("otsu"),
 ) -> BatchAnalyzeResponse:
     """Batch-analyze multiple images with the same settings."""

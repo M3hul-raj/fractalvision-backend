@@ -5,11 +5,9 @@ from enum import Enum
 
 class AnalysisMode(str, Enum):
     """Available analysis modes for fractal dimension estimation."""
-    FULL_MASK = "full-mask"
+    FULL_MASK = "full_mask"
     BOUNDARY = "boundary"
     TEXTURE = "texture"
-    EDGE = "edge"
-    GRAYSCALE = "grayscale"
 
 
 class ThresholdMethod(str, Enum):

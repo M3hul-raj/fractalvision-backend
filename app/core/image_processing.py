@@ -26,16 +26,29 @@ def manual_threshold(
     grayscale: np.ndarray, threshold: int, invert: bool = False
 ) -> np.ndarray:
     """Apply manual thresholding to a grayscale image."""
-    # TODO: Phase 3
-    pass
+    _, binary = cv2.threshold(grayscale, threshold, 255, cv2.THRESH_BINARY_INV)
+    return binary
 
 
 def adaptive_threshold(
     grayscale: np.ndarray, block_size: int = 11, c: int = 2
 ) -> np.ndarray:
     """Apply adaptive thresholding for images with uneven lighting."""
-    # TODO: Phase 3
-    pass
+    return cv2.adaptiveThreshold(
+        grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, block_size, c
+    )
+
+def mode_boundary(grayscale: np.ndarray) -> np.ndarray:
+    """Apply Otsu first, then cv2.Canny to extract boundary/edges."""
+    _, binary = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    return cv2.Canny(binary, 50, 150)
+
+def mode_texture(grayscale: np.ndarray) -> np.ndarray:
+    """Compute morphological gradient, then threshold with Otsu."""
+    kernel = np.ones((3,3), np.uint8)
+    gradient = cv2.morphologyEx(grayscale, cv2.MORPH_GRADIENT, kernel)
+    _, binary = cv2.threshold(gradient, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    return binary
 
 
 def apply_blur(image: np.ndarray, kernel_size: int) -> np.ndarray:
