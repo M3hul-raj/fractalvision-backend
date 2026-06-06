@@ -21,27 +21,31 @@ def test_manual_threshold():
     gray_img = np.zeros((20, 20), dtype=np.uint8)
     gray_img[5:15, 5:15] = 120
     gray_img[0:5, 0:5] = 200
-    binary = manual_threshold(gray_img, 150)
+    binary, tv = manual_threshold(gray_img, 150)
+    assert tv == 150
     assert binary[2, 2] == 0
     assert binary[10, 10] == 255
 
 def test_adaptive_threshold():
     gray_img = np.full((20, 20), 128, dtype=np.uint8)
-    binary = adaptive_threshold(gray_img)
+    binary, tv = adaptive_threshold(gray_img)
+    assert tv is None
     assert binary.shape == (20, 20)
     assert binary.dtype == np.uint8
 
 def test_mode_boundary():
     gray_img = np.zeros((30, 30), dtype=np.uint8)
     gray_img[5:25, 5:25] = 255
-    edges = mode_boundary(gray_img)
+    edges, tv = mode_boundary(gray_img)
+    assert tv is None
     assert edges.shape == (30, 30)
     assert np.any(edges > 0)
 
 def test_mode_texture():
     gray_img = np.zeros((20, 20), dtype=np.uint8)
     gray_img[5:15, 5:15] = 255
-    texture = mode_texture(gray_img)
+    texture, tv = mode_texture(gray_img)
+    assert tv is None
     assert texture.shape == (20, 20)
     assert len(np.unique(texture)) <= 2
 

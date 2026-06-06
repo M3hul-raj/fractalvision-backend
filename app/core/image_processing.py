@@ -24,31 +24,32 @@ def otsu_threshold(grayscale: np.ndarray) -> tuple[int, np.ndarray]:
 
 def manual_threshold(
     grayscale: np.ndarray, threshold: int, invert: bool = False
-) -> np.ndarray:
-    """Apply manual thresholding to a grayscale image."""
+) -> tuple[np.ndarray, int]:
+    """Apply manual thresholding. Returns (binary_image, threshold_value)."""
     _, binary = cv2.threshold(grayscale, threshold, 255, cv2.THRESH_BINARY_INV)
-    return binary
+    return binary, int(threshold)
 
 
 def adaptive_threshold(
     grayscale: np.ndarray, block_size: int = 11, c: int = 2
-) -> np.ndarray:
-    """Apply adaptive thresholding for images with uneven lighting."""
-    return cv2.adaptiveThreshold(
+) -> tuple[np.ndarray, None]:
+    """Apply adaptive thresholding. Returns (binary_image, None) — no single threshold."""
+    binary = cv2.adaptiveThreshold(
         grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, block_size, c
     )
+    return binary, None
 
-def mode_boundary(grayscale: np.ndarray) -> np.ndarray:
-    """Apply Otsu first, then cv2.Canny to extract boundary/edges."""
+def mode_boundary(grayscale: np.ndarray) -> tuple[np.ndarray, None]:
+    """Apply Otsu first, then cv2.Canny to extract boundary/edges. Returns (binary_image, None)."""
     _, binary = cv2.threshold(grayscale, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    return cv2.Canny(binary, 50, 150)
+    return cv2.Canny(binary, 50, 150), None
 
-def mode_texture(grayscale: np.ndarray) -> np.ndarray:
-    """Compute morphological gradient, then threshold with Otsu."""
+def mode_texture(grayscale: np.ndarray) -> tuple[np.ndarray, None]:
+    """Compute morphological gradient, then threshold with Otsu. Returns (binary_image, None)."""
     kernel = np.ones((3,3), np.uint8)
     gradient = cv2.morphologyEx(grayscale, cv2.MORPH_GRADIENT, kernel)
     _, binary = cv2.threshold(gradient, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    return binary
+    return binary, None
 
 
 def apply_blur(image: np.ndarray, kernel_size: int) -> np.ndarray:

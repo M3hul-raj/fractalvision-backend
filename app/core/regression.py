@@ -1,38 +1,40 @@
 """Linear regression and statistical analysis for log-log fractal dimension estimation."""
 
+import math
 import numpy as np
+from scipy import stats
 
 
 def linear_regression(
     x: np.ndarray, y: np.ndarray
 ) -> dict:
-    """Perform OLS linear regression. Returns {slope, intercept, r_squared, standard_error, fitted_values, residuals}."""
-    slope, intercept = np.polyfit(x, y, 1)
+    """Perform OLS linear regression using scipy.stats.linregress.
     
-    import math
+    Returns {slope, intercept, r_squared, standard_error, confidence_interval,
+             fitted_values, residuals}.
+    """
+    result = stats.linregress(x, y)
+    slope = result.slope
+    intercept = result.intercept
+    r_value = result.rvalue
+    stderr = result.stderr  # standard error of the slope
+    
     if math.isnan(slope) or math.isinf(slope) or slope < 0.5 or slope > 2.1:
         raise ValueError("Degenerate result: threshold value produces an image with too little variation for reliable box-counting. Try a higher threshold value.")
 
+    r_squared = r_value ** 2
     fitted_values = slope * x + intercept
     residuals = y - fitted_values
     
-    ss_res = np.sum(residuals**2)
-    ss_tot = np.sum((y - np.mean(y))**2)
-    r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
-    
-    n = len(x)
-    if n > 2:
-        mse = ss_res / (n - 2)
-        var_x = np.sum((x - np.mean(x))**2)
-        standard_error = np.sqrt(mse / var_x) if var_x > 0 else 0.0
-    else:
-        standard_error = 0.0
+    ci_low = slope - 1.96 * stderr
+    ci_high = slope + 1.96 * stderr
         
     return {
         "slope": float(slope),
         "intercept": float(intercept),
         "r_squared": float(r_squared),
-        "standard_error": float(standard_error),
+        "standard_error": float(stderr),
+        "confidence_interval": [float(ci_low), float(ci_high)],
         "fitted_values": fitted_values.tolist(),
         "residuals": residuals.tolist()
     }
@@ -48,12 +50,15 @@ def compute_r_squared(y_actual: np.ndarray, y_predicted: np.ndarray) -> float:
 def compute_confidence_interval(
     slope: float,
     standard_error: float,
-    n: int,
     confidence: float = 0.95,
 ) -> tuple[float, float]:
-    """Compute confidence interval for the slope (fractal dimension)."""
-    # TODO: Phase 5
-    pass
+    """Compute confidence interval for the slope (fractal dimension).
+    
+    Uses z=1.96 for 95% confidence (large-sample approximation).
+    """
+    z = 1.96 if confidence == 0.95 else stats.norm.ppf((1 + confidence) / 2)
+    margin = z * standard_error
+    return (slope - margin, slope + margin)
 
 
 def compute_log_values(

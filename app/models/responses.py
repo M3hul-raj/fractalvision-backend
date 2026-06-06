@@ -40,8 +40,8 @@ class AnalysisResultData(BaseModel):
     fractal_dimension: float
     r_squared: float
     intercept: float
-    standard_error: float
-    confidence_interval: tuple[float, float]
+    standard_error: float = 0.0
+    confidence_interval: Optional[list[float]] = None
     box_sizes: list[int]
     box_counts: list[int]
     log_inverse_sizes: list[float]
@@ -49,21 +49,19 @@ class AnalysisResultData(BaseModel):
     fitted_values: list[float]
     residuals: list[float]
     foreground_ratio: float
-    quality_score: int
-    reliability: Reliability
+    quality_score: Optional[int] = None
+    reliability: Optional[str] = None
     interpretation: str
     complexity_class: str
     warnings: list[str]
 
 
 class SensitivityResult(BaseModel):
-    """Result of a single sensitivity test."""
-    thresholds_tested: Optional[list[int]] = None
-    angles_tested: Optional[list[int]] = None
-    offsets_tested: Optional[list[float]] = None
-    dimensions: list[float]
-    std_deviation: float
-    is_stable: bool
+    """Result of a threshold sensitivity test."""
+    thresholds_tested: list[int]
+    dimensions: list[Optional[float]]
+    std_deviation: Optional[float] = None
+    is_stable: bool = False
 
 
 class SensitivityReport(BaseModel):
@@ -81,7 +79,7 @@ class AnalyzeResponse(BaseModel):
     """Response for POST /analyze."""
     parameters: AnalysisParameters
     result: AnalysisResultData
-    sensitivity: Optional[SensitivityReport] = None
+    sensitivity: Optional[SensitivityResult] = None
     processing_time_ms: int
     binary_image_b64: str
     threshold_method: str
