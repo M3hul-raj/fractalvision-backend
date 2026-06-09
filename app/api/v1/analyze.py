@@ -6,6 +6,7 @@ from typing import Optional
 import numpy as np
 from fastapi import APIRouter, File, Form, Request, UploadFile
 
+from app.core.interpretation import get_fractal_interpretation
 from app.models.responses import AnalyzeResponse, BatchAnalyzeResponse
 
 router = APIRouter()
@@ -90,6 +91,11 @@ async def analyze_image(
         image_height=height,
     )
     
+    interp = get_fractal_interpretation(
+        d_value=reg_result["slope"],
+        r_squared=reg_result["r_squared"],
+    )
+
     result_data = AnalysisResultData(
         fractal_dimension=reg_result["slope"],
         r_squared=reg_result["r_squared"],
@@ -105,8 +111,8 @@ async def analyze_image(
         foreground_ratio=foreground_ratio,
         quality_score=qs["score"],
         reliability=qs["reliability"],
-        interpretation="Phase 1 math complete.",
-        complexity_class="High",
+        interpretation=interp["interpretation"],
+        complexity_class=interp["complexity_class"],
         warnings=[]
     )
     
