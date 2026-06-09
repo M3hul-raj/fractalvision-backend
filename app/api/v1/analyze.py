@@ -4,7 +4,7 @@ import time
 from typing import Optional
 
 import numpy as np
-from fastapi import APIRouter, File, Form, Request, UploadFile
+from fastapi import APIRouter, File, Form, Request, UploadFile, HTTPException
 
 from app.core.interpretation import get_fractal_interpretation
 from app.models.responses import AnalyzeResponse, BatchAnalyzeResponse
@@ -34,6 +34,21 @@ async def analyze_image(
     
     start_time = time.time()
     file_bytes = await file.read()
+    
+    # Check 1 — File size:
+    if len(file_bytes) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=400,
+            detail="File size exceeds 10MB limit."
+        )
+
+    # Check 2 — File type:
+    ALLOWED_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/webp"}
+    if file.content_type not in ALLOWED_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{file.content_type}'. Accepted: JPG, PNG, WEBP."
+        )
     
     # 1. Image Processing
     image = image_processing.decode_uploaded_image(file_bytes)
