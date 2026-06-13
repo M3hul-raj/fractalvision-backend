@@ -96,10 +96,7 @@ async def analyze_image(
     
     foreground_ratio = float(np.count_nonzero(binary) / binary.size)
     binary_b64 = image_processing.encode_image_base64(binary)
-    
-    # 4. Quality Score
-    qs = calculate_quality_score(reg_result["r_squared"], len(box_sizes_used))
-    
+
     params = AnalysisParameters(
         analysis_mode=analysis_mode,
         threshold_method=threshold_method,
@@ -111,10 +108,29 @@ async def analyze_image(
         image_width=width,
         image_height=height,
     )
-    
+
     interp = get_fractal_interpretation(
         d_value=reg_result["slope"],
         r_squared=reg_result["r_squared"],
+    )
+
+    # 5. Sensitivity (conditional — must run before quality score)
+    sensitivity_data = None
+    if run_sensitivity and analysis_mode == AnalysisMode.FULL_MASK.value:
+        sens_result = run_threshold_sensitivity(grayscale, thresh_val, box_sizes_used)
+        if sens_result is not None:
+            sensitivity_data = SensitivityResult(**sens_result)
+
+    # 4. Quality Score (after sensitivity so std_deviation is available)
+    qs = calculate_quality_score(
+        reg_result["r_squared"],
+        len(box_sizes_used),
+        foreground_ratio=foreground_ratio,
+        sensitivity_std_deviation=(
+            sensitivity_data.std_deviation
+            if sensitivity_data is not None
+            else None
+        ),
     )
 
     result_data = AnalysisResultData(
@@ -136,16 +152,9 @@ async def analyze_image(
         complexity_class=interp["complexity_class"],
         warnings=[]
     )
-    
-    # 5. Sensitivity (conditional)
-    sensitivity_data = None
-    if run_sensitivity and analysis_mode == AnalysisMode.FULL_MASK.value:
-        sens_result = run_threshold_sensitivity(grayscale, thresh_val, box_sizes_used)
-        if sens_result is not None:
-            sensitivity_data = SensitivityResult(**sens_result)
-    
+
     processing_time_ms = int((time.time() - start_time) * 1000)
-    
+
     return AnalyzeResponse(
         parameters=params,
         result=result_data,
