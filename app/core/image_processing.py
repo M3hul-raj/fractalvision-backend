@@ -14,6 +14,18 @@ def to_grayscale(image: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
 
+def apply_gaussian_blur(gray: np.ndarray, blur_level: int) -> np.ndarray:
+    if blur_level <= 0:
+        return gray
+    kernel = blur_level * 2 + 1   # odd kernel: level 1→3x3, 2→5x5, 3→7x7
+    return cv2.GaussianBlur(gray, (kernel, kernel), 0)
+
+def apply_denoise(gray: np.ndarray) -> np.ndarray:
+    return cv2.fastNlMeansDenoising(gray, h=10,
+                                    templateWindowSize=7,
+                                    searchWindowSize=21)
+
+
 def otsu_threshold(grayscale: np.ndarray) -> tuple[int, np.ndarray]:
     """Apply Otsu's thresholding. Returns (threshold_value, binary_image)."""
     thresh_val, binary = cv2.threshold(

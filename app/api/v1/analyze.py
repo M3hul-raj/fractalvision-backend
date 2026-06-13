@@ -6,6 +6,7 @@ from typing import Optional
 import numpy as np
 from fastapi import APIRouter, File, Form, Request, UploadFile, HTTPException
 
+from app.core.image_processing import apply_gaussian_blur, apply_denoise
 from app.core.interpretation import get_fractal_interpretation
 from app.models.responses import AnalyzeResponse, BatchAnalyzeResponse
 
@@ -54,6 +55,11 @@ async def analyze_image(
     image = image_processing.decode_uploaded_image(file_bytes)
     image = image_processing.resize_if_needed(image, 1024)
     grayscale = image_processing.to_grayscale(image)
+    
+    if blur_level > 0:
+        grayscale = apply_gaussian_blur(grayscale, blur_level)
+    if denoise:
+        grayscale = apply_denoise(grayscale)
     
     thresh_val = None
     if analysis_mode == "boundary":
