@@ -64,6 +64,14 @@ class SensitivityResult(BaseModel):
     is_stable: bool = False
 
 
+class RotationSensitivityResult(BaseModel):
+    """Result of a rotation sensitivity test."""
+    angles_tested: list[float]
+    dimensions: list[Optional[float]]
+    std_deviation: Optional[float] = None
+    is_stable: bool = False
+
+
 class SensitivityReport(BaseModel):
     """Aggregated sensitivity test results."""
     threshold: Optional[SensitivityResult] = None
@@ -80,6 +88,7 @@ class AnalyzeResponse(BaseModel):
     parameters: AnalysisParameters
     result: AnalysisResultData
     sensitivity: Optional[SensitivityResult] = None
+    rotation_sensitivity: Optional[RotationSensitivityResult] = None
     processing_time_ms: int
     binary_image_b64: str
     threshold_method: str

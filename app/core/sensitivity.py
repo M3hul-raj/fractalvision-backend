@@ -1,5 +1,6 @@
-"""Sensitivity and robustness tests — threshold variation analysis."""
+"""Sensitivity and robustness tests — threshold and rotation analysis."""
 
+import cv2
 import numpy as np
 
 from app.core.image_processing import manual_threshold
@@ -58,4 +59,60 @@ def run_threshold_sensitivity(
         "dimensions": dimensions,
         "std_deviation": std_deviation,
         "is_stable": is_stable,
+    }
+
+
+def run_rotation_sensitivity(
+    binary_image: np.ndarray,
+    box_sizes: list[int],
+    angles: list[float] | None = None,
+) -> dict:
+    """Test how D changes when the binary mask is rotated at multiple angles.
+
+    Tests at 0°, 15°, 30°, 45°, 90°.
+    Returns stability metrics in the same format as run_threshold_sensitivity.
+    """
+    if angles is None:
+        angles = [0.0, 15.0, 30.0, 45.0, 90.0]
+
+    height, width = binary_image.shape[:2]
+    center = (width / 2.0, height / 2.0)
+    dimensions: list[float | None] = []
+
+    for angle in angles:
+        try:
+            if angle == 0.0:
+                rotated = binary_image
+            else:
+                M = cv2.getRotationMatrix2D(center, angle, 1.0)
+                rotated = cv2.warpAffine(
+                    binary_image, M, (width, height),
+                    flags=cv2.INTER_NEAREST,
+                    borderMode=cv2.BORDER_CONSTANT,
+                    borderValue=0,
+                )
+            bc_result = run_box_counting(rotated, width, height, box_sizes)
+            counts = bc_result["box_counts"]
+            x, y = compute_log_values(box_sizes, counts)
+            reg_result = linear_regression(x, y)
+            dimensions.append(float(reg_result["slope"]))
+        except (ValueError, Exception):
+            dimensions.append(None)
+
+    valid_dims = [d for d in dimensions if d is not None]
+
+    if len(valid_dims) < 2:
+        return {
+            "angles_tested": angles,
+            "dimensions": dimensions,
+            "std_deviation": None,
+            "is_stable": False,
+        }
+
+    std_deviation = float(np.std(valid_dims))
+    return {
+        "angles_tested": angles,
+        "dimensions": dimensions,
+        "std_deviation": std_deviation,
+        "is_stable": std_deviation < 0.05,
     }

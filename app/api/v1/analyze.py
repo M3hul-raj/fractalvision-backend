@@ -26,11 +26,12 @@ async def analyze_image(
     box_sizes: Optional[str] = Form(None),
     grid_offsets: str = Form("0,0.25,0.5,0.75"),
     run_sensitivity: bool = Form(False),
+    run_rotation_sensitivity: bool = Form(False),
 ) -> AnalyzeResponse:
     from app.core import image_processing, box_counting, regression
     from app.core.quality_score import calculate_quality_score
-    from app.core.sensitivity import run_threshold_sensitivity
-    from app.models.responses import AnalysisParameters, AnalysisResultData, SensitivityResult
+    from app.core.sensitivity import run_threshold_sensitivity, run_rotation_sensitivity as run_rotation_sensitivity_fn
+    from app.models.responses import AnalysisParameters, AnalysisResultData, SensitivityResult, RotationSensitivityResult
     from app.models.enums import AnalysisMode, ThresholdMethod
     
     start_time = time.time()
@@ -121,6 +122,12 @@ async def analyze_image(
         if sens_result is not None:
             sensitivity_data = SensitivityResult(**sens_result)
 
+    # 6. Rotation Sensitivity (conditional)
+    rotation_sensitivity_data = None
+    if run_rotation_sensitivity:
+        rot_result = run_rotation_sensitivity_fn(binary, box_sizes_used)
+        rotation_sensitivity_data = RotationSensitivityResult(**rot_result)
+
     # 4. Quality Score (after sensitivity so std_deviation is available)
     qs = calculate_quality_score(
         reg_result["r_squared"],
@@ -129,6 +136,11 @@ async def analyze_image(
         sensitivity_std_deviation=(
             sensitivity_data.std_deviation
             if sensitivity_data is not None
+            else None
+        ),
+        rotation_std_deviation=(
+            rotation_sensitivity_data.std_deviation
+            if rotation_sensitivity_data is not None
             else None
         ),
     )
@@ -159,6 +171,7 @@ async def analyze_image(
         parameters=params,
         result=result_data,
         sensitivity=sensitivity_data,
+        rotation_sensitivity=rotation_sensitivity_data,
         processing_time_ms=processing_time_ms,
         binary_image_b64=binary_b64,
         threshold_method=threshold_method,

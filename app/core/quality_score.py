@@ -6,6 +6,7 @@ def calculate_quality_score(
     num_scales: int,
     foreground_ratio: float = 0.5,
     sensitivity_std_deviation: float | None = None,
+    rotation_std_deviation: float | None = None,
 ) -> dict:
     """Compute a 0-100 quality score based on R² and number of box-counting scales.
 
@@ -47,6 +48,13 @@ def calculate_quality_score(
             base -= 20   # very unstable
         elif sensitivity_std_deviation > 0.05:
             base -= 10   # unstable
+
+    # Rotation sensitivity penalty
+    if rotation_std_deviation is not None:
+        if rotation_std_deviation > 0.10:
+            base -= 15
+        elif rotation_std_deviation > 0.05:
+            base -= 8
 
     score = int(max(0, min(base, 100)))
 
