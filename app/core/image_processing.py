@@ -46,6 +46,8 @@ def adaptive_threshold(
     grayscale: np.ndarray, block_size: int = 11, c: int = 2
 ) -> tuple[np.ndarray, None]:
     """Apply adaptive thresholding. Returns (binary_image, None) — no single threshold."""
+    if block_size % 2 == 0:
+        block_size += 1
     binary = cv2.adaptiveThreshold(
         grayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, block_size, c
     )

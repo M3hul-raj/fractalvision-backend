@@ -27,6 +27,8 @@ async def analyze_image(
     grid_offsets: str = Form("0,0.25,0.5,0.75"),
     run_sensitivity: bool = Form(False),
     run_rotation_sensitivity: bool = Form(False),
+    adaptive_block_size: int = Form(11),
+    adaptive_c: int = Form(2),
 ) -> AnalyzeResponse:
     from app.core import image_processing, box_counting, regression
     from app.core.quality_score import calculate_quality_score
@@ -69,7 +71,7 @@ async def analyze_image(
         binary, thresh_val = image_processing.mode_texture(grayscale)
     else:
         if threshold_method == "adaptive":
-            binary, thresh_val = image_processing.adaptive_threshold(grayscale)
+            binary, thresh_val = image_processing.adaptive_threshold(grayscale, block_size=adaptive_block_size, c=adaptive_c)
         elif threshold_method == "manual":
             binary, thresh_val = image_processing.manual_threshold(grayscale, threshold_value)
         else:
