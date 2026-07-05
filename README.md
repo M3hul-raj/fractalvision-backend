@@ -4,7 +4,7 @@ FastAPI backend for scientific fractal dimension analysis using the box-counting
 
 ## Live API
 
-**Backend:** https://fractalvision-backend-jt6d2.ondigitalocean.app  
+**Backend:** https://fractalvision-backend-43382945646.us-central1.run.app  
 **Frontend:** https://fractalvision-frontend.vercel.app
 
 ## What This Does
@@ -76,7 +76,7 @@ fractalvision-backend/
 │   ├── config.py                   # pydantic-settings configuration
 │   └── main.py                     # FastAPI app entry point
 ├── tests/                          # pytest test suite (16 tests)
-├── Procfile                        # DigitalOcean start command
+├── Dockerfile                      # Google Cloud Run deployment container
 ├── .python-version                 # Python 3.14
 └── requirements.txt
 ```
@@ -161,11 +161,12 @@ curl http://localhost:8000/api/v1/health
 
 ## Deployment
 
-Deployed on **DigitalOcean App Platform** via GitHub auto-deploy on push to `main`.
+Deployed on **Google Cloud Run** (us-central1, free tier) via Dockerfile.
 
-- **Buildpack:** Python (auto-detected from `requirements.txt` and `.python-version`)
+- **Container:** Python 3.11-slim with OpenCV system deps
 - **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- **Instance:** Basic ($10/mo), 1 GB RAM, Bangalore region
+- **Resources:** 1 GiB RAM, 1 vCPU, scales to zero when idle
+- **Cost:** $0/month (within free tier limits)
 - **CORS:** Configured via `ALLOWED_ORIGINS` env var
 
 ## Related

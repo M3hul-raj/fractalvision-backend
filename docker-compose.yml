@@ -1,5 +1,5 @@
 # FractalVision Lab Backend — Docker Compose
-# Used for Railway/Render deployment only. Not used for local development.
+# Docker Compose for local testing. Production uses Google Cloud Run.
 
 version: "3.8"
 

@@ -1,5 +1,5 @@
 # FractalVision Lab Backend — Deployment Dockerfile
-# Used for Railway/Render deployment only. Not used for local development.
+# Used for Google Cloud Run deployment. Not used for local development.
 
 FROM python:3.11-slim
 
