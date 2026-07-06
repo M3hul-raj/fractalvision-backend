@@ -66,36 +66,6 @@ def mode_texture(grayscale: np.ndarray) -> tuple[np.ndarray, None]:
     return binary, None
 
 
-def apply_blur(image: np.ndarray, kernel_size: int) -> np.ndarray:
-    """Apply Gaussian blur to an image."""
-    # TODO: Phase 3
-    pass
-
-
-def denoise_image(image: np.ndarray) -> np.ndarray:
-    """Apply non-local means denoising."""
-    # TODO: Phase 3
-    pass
-
-
-def extract_boundary(binary: np.ndarray) -> np.ndarray:
-    """Extract boundary pixels: boundary = binary - eroded(binary)."""
-    # TODO: Phase 3
-    pass
-
-
-def skeletonize(binary: np.ndarray) -> np.ndarray:
-    """Extract skeleton/venation structure from binary image."""
-    # TODO: Phase 3
-    pass
-
-
-def detect_edges(grayscale: np.ndarray) -> np.ndarray:
-    """Apply Canny edge detection."""
-    # TODO: Phase 3
-    pass
-
-
 def decode_uploaded_image(file_bytes: bytes) -> np.ndarray:
     """Decode uploaded image bytes into a cv2 BGR numpy array."""
     nparr = np.frombuffer(file_bytes, np.uint8)
