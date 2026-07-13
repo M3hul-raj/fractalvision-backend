@@ -1,3 +1,4 @@
+# NOTE: This is a local one-off maintenance script, not part of the deployed app.
 """
 One-time script to upload dissertation specimen images to Supabase Storage
 and update the specimens table with their public URLs.
@@ -5,7 +6,7 @@ and update the specimens table with their public URLs.
 Usage:
     cd fractalvision-backend
     .venv\Scripts\activate
-    python upload_images.py
+    python scripts/upload_images.py
 """
 
 import os
@@ -13,8 +14,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 
-# Load env vars from .env
-load_dotenv(Path(__file__).parent / ".env")
+# Load env vars from .env (parent directory)
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 # Strip /rest/v1/ if present (the Python client needs the base URL)

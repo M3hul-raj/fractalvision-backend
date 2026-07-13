@@ -1,3 +1,4 @@
+# NOTE: This is a local one-off maintenance script, not part of the deployed app.
 """
 One-time script to backfill empty array columns in the Supabase 'specimens' table
 and update fractal_dimension/r_squared/intercept with freshly computed values
@@ -6,7 +7,7 @@ if the delta is within an acceptable range (<= 0.05).
 Usage:
     cd fractalvision-backend
     .venv\Scripts\activate
-    python backfill_db.py
+    python scripts/backfill_db.py
 """
 
 import os
@@ -16,8 +17,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 
-# Load env vars from .env
-load_dotenv(Path(__file__).parent / ".env")
+# Load env vars from .env (parent directory)
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "").rstrip("/")
 if SUPABASE_URL.endswith("/rest/v1"):
@@ -58,7 +59,6 @@ def main():
 
     updated_count = 0
     skipped_missing = 0
-    skipped_delta = 0
 
     for local_path, specimen_id in IMAGES:
         # a. Check if file exists
@@ -106,8 +106,6 @@ def main():
             # f. Print comparison line
             print(f"{specimen_id}: stored D={stored_d:.4f}, computed D={computed_d:.4f}, delta={delta:.4f}")
 
-            # g. (Removed delta check)
-            
             # h. Run Supabase update
             update_data = {
                 "box_sizes": box_sizes,
@@ -126,7 +124,7 @@ def main():
             print(f"[ERROR] {specimen_id}: {e}")
 
     print("-" * 60)
-    print(f"Summary: {updated_count} updated, {skipped_missing} skipped (missing), {skipped_delta} skipped (delta too large)")
+    print(f"Summary: {updated_count} updated, {skipped_missing} skipped (missing)")
 
 if __name__ == "__main__":
     main()
