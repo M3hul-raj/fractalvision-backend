@@ -6,6 +6,8 @@ from typing import Optional
 import numpy as np
 from fastapi import APIRouter, File, Form, Request, UploadFile, HTTPException
 
+from app.api.deps import limiter
+
 from app.core.image_processing import apply_gaussian_blur, apply_denoise
 from app.core.interpretation import get_fractal_interpretation
 from app.models.responses import AnalyzeResponse, BatchAnalyzeResponse
@@ -14,6 +16,7 @@ router = APIRouter()
 
 
 @router.post("/analyze", response_model=AnalyzeResponse)
+@limiter.limit("10/minute")
 async def analyze_image(
     request: Request,
     file: UploadFile = File(..., description="Image file (PNG, JPG, JPEG, WEBP)"),

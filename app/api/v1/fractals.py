@@ -3,7 +3,9 @@
 import time
 
 import numpy as np
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+
+from app.api.deps import limiter
 
 from app.core.box_counting import auto_select_box_sizes, run_box_counting
 from app.core.fractal_generators import (
@@ -29,7 +31,9 @@ async def list_fractals() -> list[StandardFractalInfo]:
 
 
 @router.post("/fractals/{fractal_id}/generate", response_model=GenerateFractalResponse)
+@limiter.limit("10/minute")
 async def generate_fractal_endpoint(
+    request: Request,
     fractal_id: str,
     body: GenerateFractalRequest,
 ) -> GenerateFractalResponse:
