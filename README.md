@@ -129,10 +129,10 @@ fractalvision-backend/
 │   │   └── rate_limiter.py         # Rate limiter setup
 │   ├── config.py                   # pydantic-settings configuration
 │   └── main.py                     # FastAPI app entry point
-├── tests/                          # pytest test suite (16 tests)
 ├── scripts/                        # Local one-off maintenance scripts
 │   ├── backfill_db.py              # Backfill Supabase DB with computed data
 │   └── upload_images.py            # Upload specimen images to Supabase Storage
+├── tests/                          # pytest test suite (16 tests)
 ├── Dockerfile                      # Google Cloud Run deployment container
 ├── docker-compose.yml              # Docker Compose for local testing
 ├── .python-version                 # Python 3.14
