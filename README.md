@@ -109,8 +109,7 @@ fractalvision-backend/
 │   │       ├── router.py           # Aggregates all v1 route modules
 │   │       ├── analyze.py          # POST /analyze (+ /analyze/batch stub)
 │   │       ├── fractals.py         # GET /fractals, POST /fractals/{id}/generate
-│   │       ├── health.py           # GET /health
-│   │       └── meta.py             # GET /meta/interpretation-bands (stub)
+│   │       └── health.py           # GET /health
 │   ├── core/
 │   │   ├── box_counting.py         # Box-counting algorithm with grid offsets
 │   │   ├── image_processing.py     # OpenCV preprocessing, thresholding, encoding
