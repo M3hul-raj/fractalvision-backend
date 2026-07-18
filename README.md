@@ -125,8 +125,7 @@ fractalvision-backend/
 │   │   └── responses.py            # Pydantic response models
 │   ├── utils/
 │   │   ├── id_generator.py         # UUID-based short ID generator
-│   │   ├── image_validation.py     # Upload validation helpers
-│   │   └── rate_limiter.py         # Rate limiter setup
+│   │   └── image_validation.py     # Upload validation helpers
 │   ├── config.py                   # pydantic-settings configuration
 │   └── main.py                     # FastAPI app entry point
 ├── scripts/                        # Local one-off maintenance scripts
