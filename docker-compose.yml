@@ -1,14 +1,55 @@
-# FractalVision Lab Backend — Docker Compose
-# Docker Compose for local testing. Production uses Google Cloud Run.
-
-version: "3.8"
+# FractalVision Lab Backend — Local Development Stack (API + PostgreSQL + Migrations)
+# One command to run: docker compose up --build
+# Production deploys the backend image separately to Google Cloud Run.
 
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fractalvision}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fractalvision}
+      POSTGRES_DB: ${POSTGRES_DB:-fractalvision}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-fractalvision} -d $${POSTGRES_DB:-fractalvision}"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: .
+    image: fractalvision-backend:local
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fractalvision}:${POSTGRES_PASSWORD:-fractalvision}@db:5432/${POSTGRES_DB:-fractalvision}
+    command: ["python", "scripts/migrate.py"]
+    restart: "no"
+
   api:
     build: .
+    image: fractalvision-backend:local
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     environment:
-      - PYTHONUNBUFFERED=1
+      PORT: "8000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-fractalvision}:${POSTGRES_PASSWORD:-fractalvision}@db:5432/${POSTGRES_DB:-fractalvision}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,https://fractalvision-frontend.vercel.app}
+      PYTHONUNBUFFERED: "1"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

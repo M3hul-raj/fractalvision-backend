@@ -1,6 +1,7 @@
 """Linear regression and statistical analysis for log-log fractal dimension estimation."""
 
 import math
+
 import numpy as np
 from scipy import stats
 
@@ -9,7 +10,7 @@ def linear_regression(
     x: np.ndarray, y: np.ndarray
 ) -> dict:
     """Perform OLS linear regression using scipy.stats.linregress.
-    
+
     Returns {slope, intercept, r_squared, standard_error, confidence_interval,
              fitted_values, residuals}.
     """
@@ -18,17 +19,17 @@ def linear_regression(
     intercept = result.intercept
     r_value = result.rvalue
     stderr = result.stderr  # standard error of the slope
-    
+
     if math.isnan(slope) or math.isinf(slope) or slope < 0.5 or slope > 2.1:
         raise ValueError("Degenerate result: threshold value produces an image with too little variation for reliable box-counting. Try a higher threshold value.")
 
     r_squared = r_value ** 2
     fitted_values = slope * x + intercept
     residuals = y - fitted_values
-    
+
     ci_low = slope - 1.96 * stderr
     ci_high = slope + 1.96 * stderr
-        
+
     return {
         "slope": float(slope),
         "intercept": float(intercept),
@@ -53,7 +54,7 @@ def compute_confidence_interval(
     confidence: float = 0.95,
 ) -> tuple[float, float]:
     """Compute confidence interval for the slope (fractal dimension).
-    
+
     Uses z=1.96 for 95% confidence (large-sample approximation).
     """
     z = 1.96 if confidence == 0.95 else stats.norm.ppf((1 + confidence) / 2)

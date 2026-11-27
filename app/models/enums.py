@@ -1,30 +1,30 @@
 """Enum definitions for FractalVision Lab API."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class AnalysisMode(str, Enum):
+class AnalysisMode(StrEnum):
     """Available analysis modes for fractal dimension estimation."""
     FULL_MASK = "full_mask"
     BOUNDARY = "boundary"
     TEXTURE = "texture"
 
 
-class ThresholdMethod(str, Enum):
+class ThresholdMethod(StrEnum):
     """Available thresholding methods for binary conversion."""
     OTSU = "otsu"
     MANUAL = "manual"
     ADAPTIVE = "adaptive"
 
 
-class Reliability(str, Enum):
+class Reliability(StrEnum):
     """Reliability classification for analysis results."""
     HIGH = "High"
     MEDIUM = "Medium"
     LOW = "Low"
 
 
-class ComplexityClass(str, Enum):
+class ComplexityClass(StrEnum):
     """Complexity classification derived from fractal dimension."""
     SPARSE = "Sparse"
     SMOOTH_LINE = "Smooth line-like"

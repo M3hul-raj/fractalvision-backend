@@ -5,12 +5,14 @@ and update the specimens table with their public URLs.
 
 Usage:
     cd fractalvision-backend
-    .venv\Scripts\activate
+    .venv/Scripts/activate
     python scripts/upload_images.py
 """
 
+import glob
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -26,7 +28,6 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 BUCKET = "specimens"
 
 # Dynamically find the dissertation folder (has a non-breaking space in the name)
-import glob
 diss_dirs = glob.glob(r"D:\Dissertation*")
 if not diss_dirs:
     print("ERROR: Dissertation folder not found on D: drive")

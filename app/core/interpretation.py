@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 
-
 # ── D-value band table ────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)

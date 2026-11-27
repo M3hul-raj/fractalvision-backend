@@ -1,17 +1,19 @@
 import numpy as np
-from app.core.box_counting import box_count, auto_select_box_sizes, run_box_counting
+
+from app.core.box_counting import auto_select_box_sizes, box_count, run_box_counting
+
 
 def test_box_count():
     # 8x8 image, a simple 4x4 square in the middle
     binary = np.zeros((8, 8), dtype=np.uint8)
     binary[2:6, 2:6] = 255
-    
+
     count = box_count(binary, 8, 8, 2)
     assert count == 4
-    
+
     count = box_count(binary, 8, 8, 4)
     assert count == 4
-    
+
     count = box_count(binary, 8, 8, 8)
     assert count == 1
 
