@@ -6,14 +6,15 @@ if the delta is within an acceptable range (<= 0.05).
 
 Usage:
     cd fractalvision-backend
-    .venv\Scripts\activate
+    .venv/Scripts/activate
     python scripts/backfill_db.py
 """
 
-import os
 import glob
-import requests
+import os
 from pathlib import Path
+
+import requests
 from dotenv import load_dotenv
 from supabase import create_client
 
@@ -66,7 +67,7 @@ def main():
             print(f"[WARN] {specimen_id}: File not found, skipping. ({local_path})")
             skipped_missing += 1
             continue
-        
+
         try:
             # b. Fetch currently stored 'fractal_dimension'
             res = supabase.table("specimens").select("fractal_dimension").eq("id", specimen_id).execute()
@@ -74,7 +75,7 @@ def main():
                 print(f"[WARN] {specimen_id}: Not found in database, skipping.")
                 skipped_missing += 1
                 continue
-            
+
             stored_d = res.data[0]["fractal_dimension"]
 
             # c. POST the image to local backend

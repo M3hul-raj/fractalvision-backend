@@ -1,14 +1,15 @@
 import numpy as np
-import cv2
+
 from app.core.image_processing import (
-    to_grayscale, 
-    otsu_threshold, 
-    resize_if_needed,
-    manual_threshold,
     adaptive_threshold,
+    manual_threshold,
     mode_boundary,
-    mode_texture
+    mode_texture,
+    otsu_threshold,
+    resize_if_needed,
+    to_grayscale,
 )
+
 
 def test_to_grayscale():
     bgr_img = np.zeros((10, 10, 3), dtype=np.uint8)

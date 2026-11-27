@@ -1,11 +1,9 @@
 """Pydantic response models for FractalVision Lab API."""
 
-from typing import Optional
 
 from pydantic import BaseModel
 
-from app.models.enums import AnalysisMode, Reliability, ThresholdMethod
-
+from app.models.enums import AnalysisMode, ThresholdMethod
 
 # --------------------------------------------------------------------------- #
 # Health
@@ -26,7 +24,7 @@ class AnalysisParameters(BaseModel):
     """Parameters that were used for an analysis run."""
     analysis_mode: AnalysisMode
     threshold_method: ThresholdMethod
-    computed_threshold: Optional[int] = None
+    computed_threshold: int | None = None
     invert: bool
     denoise: bool
     blur_level: int
@@ -41,7 +39,7 @@ class AnalysisResultData(BaseModel):
     r_squared: float
     intercept: float
     standard_error: float = 0.0
-    confidence_interval: Optional[list[float]] = None
+    confidence_interval: list[float] | None = None
     box_sizes: list[int]
     box_counts: list[int]
     log_inverse_sizes: list[float]
@@ -49,8 +47,8 @@ class AnalysisResultData(BaseModel):
     fitted_values: list[float]
     residuals: list[float]
     foreground_ratio: float
-    quality_score: Optional[int] = None
-    reliability: Optional[str] = None
+    quality_score: int | None = None
+    reliability: str | None = None
     interpretation: str
     complexity_class: str
     warnings: list[str]
@@ -59,24 +57,24 @@ class AnalysisResultData(BaseModel):
 class SensitivityResult(BaseModel):
     """Result of a threshold sensitivity test."""
     thresholds_tested: list[int]
-    dimensions: list[Optional[float]]
-    std_deviation: Optional[float] = None
+    dimensions: list[float | None]
+    std_deviation: float | None = None
     is_stable: bool = False
 
 
 class RotationSensitivityResult(BaseModel):
     """Result of a rotation sensitivity test."""
     angles_tested: list[float]
-    dimensions: list[Optional[float]]
-    std_deviation: Optional[float] = None
+    dimensions: list[float | None]
+    std_deviation: float | None = None
     is_stable: bool = False
 
 
 class SensitivityReport(BaseModel):
     """Aggregated sensitivity test results."""
-    threshold: Optional[SensitivityResult] = None
-    rotation: Optional[SensitivityResult] = None
-    grid_origin: Optional[SensitivityResult] = None
+    threshold: SensitivityResult | None = None
+    rotation: SensitivityResult | None = None
+    grid_origin: SensitivityResult | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -87,8 +85,8 @@ class AnalyzeResponse(BaseModel):
     """Response for POST /analyze."""
     parameters: AnalysisParameters
     result: AnalysisResultData
-    sensitivity: Optional[SensitivityResult] = None
-    rotation_sensitivity: Optional[RotationSensitivityResult] = None
+    sensitivity: SensitivityResult | None = None
+    rotation_sensitivity: RotationSensitivityResult | None = None
     processing_time_ms: int
     binary_image_b64: str
     threshold_method: str
@@ -104,8 +102,8 @@ class BatchResultItem(BaseModel):
     """A single item in a batch analysis response."""
     filename: str
     status: str
-    result: Optional[AnalysisResultData] = None
-    error: Optional[str] = None
+    result: AnalysisResultData | None = None
+    error: str | None = None
 
 
 class BatchAnalyzeResponse(BaseModel):
@@ -154,7 +152,7 @@ class GenerateFractalResponse(BaseModel):
 class InterpretationBand(BaseModel):
     """A single D-value interpretation band."""
     min: float
-    max: Optional[float] = None
+    max: float | None = None
     label: str
 
 
@@ -164,7 +162,7 @@ class InterpretationBand(BaseModel):
 
 class ErrorDetail(BaseModel):
     """Detail for a single validation error."""
-    field: Optional[str] = None
+    field: str | None = None
     issue: str
 
 
@@ -172,8 +170,8 @@ class ErrorBody(BaseModel):
     """Standard error response body."""
     code: str
     message: str
-    details: Optional[list[ErrorDetail]] = None
-    request_id: Optional[str] = None
+    details: list[ErrorDetail] | None = None
+    request_id: str | None = None
 
 
 class MetaInfo(BaseModel):
@@ -184,6 +182,6 @@ class MetaInfo(BaseModel):
 
 class ApiResponse(BaseModel):
     """Standard API response envelope."""
-    data: Optional[dict | list] = None
-    error: Optional[ErrorBody] = None
-    meta: Optional[MetaInfo] = None
+    data: dict | list | None = None
+    error: ErrorBody | None = None
+    meta: MetaInfo | None = None

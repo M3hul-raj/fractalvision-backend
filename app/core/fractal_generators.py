@@ -1,9 +1,9 @@
 """Standard fractal generators — Cantor Set, Koch Curve, Sierpiński Triangle/Carpet."""
 
 import math
-import numpy as np
-import cv2
 
+import cv2
+import numpy as np
 
 # Registry of known standard fractals and their theoretical dimensions.
 STANDARD_FRACTALS: list[dict] = [
